@@ -7,7 +7,6 @@ final_table
 
 # Rust cache
 Cargo.lock
-Cargo.toml
 
 # IDE files
 .vscode/

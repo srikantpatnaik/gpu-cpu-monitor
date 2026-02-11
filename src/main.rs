@@ -2,6 +2,8 @@ use clap::{Parser, ValueEnum};
 use ssh2::Session;
 use std::io::{self, Read, Write};
 use std::process::Command;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
@@ -402,15 +404,23 @@ fn display_format(sys_info: &SystemInfo, args: &Args) {
 fn main() {
     let args = Args::parse();
 
-    if let Some(ssh_host) = &args.ssh_host {
-        println!(
-            "Connecting to remote host {} as user {}...",
-            ssh_host, args.ssh_user
-        );
-        println!("Starting GPU/CPU Monitor ({}s refresh)...", args.refresh);
-        println!("Use Ctrl+C to exit");
+    // Create an atomic boolean to handle shutdown
+    let shutdown = Arc::new(AtomicBool::new(false));
+    let shutdown_clone = shutdown.clone();
 
+    // Set up signal handlers for graceful shutdown
+    ctrlc::set_handler(move || {
+        shutdown_clone.store(true, Ordering::SeqCst);
+    })
+    .expect("Error setting Ctrl-C handler");
+
+    if let Some(ssh_host) = &args.ssh_host {
+        // No welcome message for remote connection
         loop {
+            if shutdown.load(Ordering::SeqCst) {
+                break;
+            }
+
             // For now, just return empty system info for remote connection
             // In a real implementation we would establish an SSH connection here
             let sys_info = get_remote_system_info(ssh_host, &args.ssh_user, args.ssh_port)
@@ -425,14 +435,21 @@ fn main() {
             // Display information
             display_format(&sys_info, &args);
 
-            // Wait for the specified interval
-            thread::sleep(Duration::from_secs(args.refresh));
+            // Wait for the specified interval or check for shutdown
+            for _ in 0..args.refresh {
+                if shutdown.load(Ordering::SeqCst) {
+                    break;
+                }
+                thread::sleep(Duration::from_secs(1));
+            }
         }
     } else {
-        println!("Starting GPU/CPU Monitor ({}s refresh)...", args.refresh);
-        println!("Use Ctrl+C to exit");
-
+        // No welcome message for local connection
         loop {
+            if shutdown.load(Ordering::SeqCst) {
+                break;
+            }
+
             // Get system information
             let cpu_info = get_cpu_info();
             let gpus = get_gpu_info();
@@ -444,8 +461,13 @@ fn main() {
             // Display information in a table format
             display_format(&sys_info, &args);
 
-            // Wait for the specified interval
-            thread::sleep(Duration::from_secs(args.refresh));
+            // Wait for the specified interval or check for shutdown
+            for _ in 0..args.refresh {
+                if shutdown.load(Ordering::SeqCst) {
+                    break;
+                }
+                thread::sleep(Duration::from_secs(1));
+            }
         }
     }
 }
