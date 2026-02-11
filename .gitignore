@@ -1,0 +1,20 @@
+# Built binaries
+target/
+gpu-cpu-monitor
+demo_table
+fixed_table
+final_table
+
+# Rust cache
+Cargo.lock
+Cargo.toml
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
