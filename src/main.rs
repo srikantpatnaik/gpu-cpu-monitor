@@ -357,39 +357,46 @@ fn format_value(value: f64, no_color: bool) -> String {
 fn display_format(sys_info: &SystemInfo, args: &Args) {
     // Clear screen
     print!("\x1B[2J\x1B[1;1H");
-    io::stdout().flush().unwrap();
 
     // Simple format: CPU Load CPU Mem
-    println!(
+    print!(
         "CPU {}  {}",
         format_value(sys_info.cpu.load, args.no_color),
         format_value(sys_info.cpu.memory_percentage, args.no_color)
     );
 
-    // Simple format: GPU Load GPU Mem (showing both load and memory percentage)
+    // Show average GPU load and memory usage on next line
     if !sys_info.gpus.is_empty() {
-        let mut total_gpu_load = 0i32;
-        let mut total_memory_load = 0i32;
-        let mut gpu_count = 0i32;
+        // Calculate average GPU load and memory usage
+        let total_gpu_load: i64 = sys_info.gpus.iter().map(|gpu| gpu.gpu_load as i64).sum();
+        let total_memory_load: i64 = sys_info.gpus.iter().map(|gpu| gpu.memory_load as i64).sum();
+        let gpu_count = sys_info.gpus.len() as i64;
 
-        for gpu in &sys_info.gpus {
-            total_gpu_load += gpu.gpu_load;
-            total_memory_load += gpu.memory_load;
-            gpu_count += 1;
-        }
+        let avg_gpu_load = if gpu_count > 0 {
+            (total_gpu_load as f64 / gpu_count as f64).round() as i32
+        } else {
+            0
+        };
 
-        let avg_gpu_load = total_gpu_load as f64 / gpu_count as f64;
-        let avg_memory_load = total_memory_load as f64 / gpu_count as f64;
+        let avg_memory_load = if gpu_count > 0 {
+            (total_memory_load as f64 / gpu_count as f64).round() as i32
+        } else {
+            0
+        };
 
-        // Show both GPU load and memory percentage like CPU
+        println!();
         println!(
-            "GPU {} {}",
-            format_value(avg_gpu_load, args.no_color),
-            format_value(avg_memory_load, args.no_color)
+            "GPU {}  {}",
+            format_value(avg_gpu_load as f64, args.no_color),
+            format_value(avg_memory_load as f64, args.no_color)
         );
     } else {
+        println!();
         println!("GPU 0  0");
     }
+
+    // Ensure we flush the output
+    io::stdout().flush().unwrap();
 }
 
 fn main() {

@@ -1,99 +1,55 @@
-# GPU/CPU Monitor Project
+# GPU/CPU Monitor
 
-## Project Overview
+A Rust-based tool for monitoring GPU and CPU utilization on local and remote systems.
 
-This project is a Rust-based command-line tool for monitoring both CPU and GPU statistics with a colorful tabular display. It supports both local system monitoring and remote monitoring via SSH.
+## Features
 
-## Key Features
+- **Local Monitoring**: Displays CPU load, memory usage, and GPU information
+- **Remote SSH Monitoring**: Connects to remote hosts via SSH for monitoring
+- **Color-coded Output**: Green (low), Yellow (medium), Red (high) usage indicators
+- **Real-time Updates**: Configurable refresh intervals
+- **Terminal-friendly**: Proper screen clearing and cursor positioning
 
-1. **Real-time Monitoring**: Updates every 2 seconds
-2. **Colorful Table Output**: Different colors for different information types
-3. **Cross-Platform Support**: Built as a static binary with musl libc
-4. **GPU Support**: Shows GPU usage when NVIDIA GPU is detected
-5. **System Agnostic**: Gracefully handles systems without GPU drivers
+## Build
 
-## Directory Structure
-
-```
-rust-gpu-cpu-monitor/
-├── src/
-│   └── main.rs          # Main implementation
-├── Cargo.toml           # Build configuration
-├── Makefile             # Build automation
-├── build.sh             # Build script for static linking
-└── README.md            # Documentation
+```bash
+make
 ```
 
-## Technical Implementation Details
+This will build the release version and create a symbolic link to the executable.
 
-### Core Components
+## Usage
 
-1. **System Information Parsing**:
-   - CPU load from `/proc/stat`
-   - Memory usage from `/proc/meminfo`
-   - GPU info from `nvidia-smi` when available
+### Local Monitoring
+```bash
+./gpu-cpu-monitor
+```
 
-2. **Color Coding**:
-   - Green: CPU Load Percentage
-   - Yellow: Memory Usage Percentage
-   - Red: GPU Usage Percentage
-   - Blue: GPU Memory Usage Percentage
+### Remote Monitoring
+```bash
+./gpu-cpu-monitor --ssh-host <host> --ssh-user <user>
+```
 
-3. **Display Format**:
-   - Tabular structure with Unicode box characters
-   - Clean layout with clear sectioning
-   - Colorized output for quick information scanning
+### Options
+- `--refresh <seconds>`: Refresh interval (default: 2)
+- `--no-color`: Disable color output
+- `--ssh-host <host>`: Remote host to connect to
+- `--ssh-user <user>`: SSH user (default: root)
+- `--ssh-port <port>`: SSH port (default: 22)
 
-### Build Configuration
+## Output Format
 
-The project is configured for:
-- Static linking with musl libc (`x86_64-unknown-linux-musl`)
-- Release build with optimizations (`opt-level = "z"`)
-- Stripped debug symbols (`strip = true`)
-- LTO (Link Time Optimization) enabled
-
-## Usage Instructions
-
-1. **Build the static binary**:
-   ```bash
-   make build-static
-   ```
-
-2. **Run the monitor**:
-   ```bash
-   ./target/x86_64-unknown-linux-musl/release/gpu-cpu-monitor
-   ```
-
-3. **Exit**:
-   Press Ctrl+C to exit the monitoring loop
+- CPU Load: Percentage of CPU utilization
+- CPU Memory: Percentage of memory usage  
+- GPU1:GPU Load Memory Load (for each GPU)
+- Colors: Green (<40%), Yellow (40-80%), Red (>80%)
 
 ## Requirements
 
-- Rust toolchain (1.56 or higher)
-- musl-tools for static linking
-- On systems with NVIDIA GPUs, `nvidia-smi` utility must be installed
+- Rust toolchain (cargo)
+- nvidia-smi (for GPU monitoring)
+- SSH access to remote hosts (for remote monitoring)
 
-## Design Principles
+## Build Requirements
 
-1. **Minimal Footprint**: Only essential system information is displayed
-2. **Performance**: Efficient parsing of system information files
-3. **Reliability**: Graceful handling of missing components
-4. **Usability**: Clear visual distinction between different metrics
-5. **Portability**: Static binary ensures compatibility across systems
-
-## Troubleshooting
-
-If you encounter build issues, ensure:
-1. You have Rust installed (`rustc --version`)
-2. You have the musl target installed (`rustup target add x86_64-unknown-linux-musl`)
-3. You have musl-tools installed (on Ubuntu/Debian: `sudo apt install musl-tools`)
-
-## Note about Sandboxing
-
-Due to sandbox restrictions in the current environment, the build may fail when trying to execute shell commands. If you're unable to build the project in this environment, please try:
-
-1. Running the build outside of the sandboxed environment
-2. Ensuring all required Rust components are installed:
-   - Rust toolchain
-   - musl-tools
-   - x86_64-unknown-linux-musl target
+- musl libc (for static linking)
