@@ -1,0 +1,75 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build and Release
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-musl
+            arch: x86_64
+            platform: linux
+          - target: aarch64-unknown-linux-musl
+            arch: arm64
+            platform: linux
+
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install musl-tools and target
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y musl-tools
+        rustup target add ${{ matrix.target }}
+
+    - name: Build release binary
+      run: |
+        cargo build --target ${{ matrix.target }} --release
+        mkdir -p release
+        cp target/${{ matrix.target }}/release/gpu-cpu-monitor release/
+
+    - name: Create release assets
+      run: |
+        cd release
+        tar -czf gpu-cpu-monitor-${{ matrix.arch }}-${{ github.ref_name }}.tar.gz gpu-cpu-monitor
+        echo "ASSET_PATH=$(pwd)/gpu-cpu-monitor-${{ matrix.arch }}-${{ github.ref_name }}.tar.gz" >> $GITHUB_ENV
+        echo "ASSET_NAME=gpu-cpu-monitor-${{ matrix.arch }}-${{ github.ref_name }}.tar.gz" >> $GITHUB_ENV
+
+    - name: Upload release asset
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-${{ matrix.arch }}
+        path: release/gpu-cpu-monitor-${{ matrix.arch }}-${{ github.ref_name }}.tar.gz
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref_type == 'tag'
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: release
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: Release ${{ github.ref_name }}
+        tag_name: ${{ github.ref_name }}
+        body: |
+          ## Release ${{ github.ref_name }}
+          
+          This release includes static binaries for x86_64 and arm64 architectures.
+          
+          ### Binaries
+          - x86_64: gpu-cpu-monitor-x86_64-${{ github.ref_name }}.tar.gz
+          - arm64: gpu-cpu-monitor-arm64-${{ github.ref_name }}.tar.gz
+        files: |
+          release/**/*

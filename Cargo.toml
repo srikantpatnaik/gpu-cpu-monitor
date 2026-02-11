@@ -12,4 +12,5 @@ panic = "abort"
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
+ctrlc = "3.5.2"
 ssh2 = "0.9"

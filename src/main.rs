@@ -16,7 +16,7 @@ struct Args {
     ssh_host: Option<String>,
 
     /// SSH user for remote connection
-    #[clap(long, default_value = "root")]
+    #[clap(long, default_value = "")]
     ssh_user: String,
 
     /// SSH port (default is 22)
@@ -190,6 +190,37 @@ fn get_gpu_info() -> Vec<GpuInfo> {
     }
 }
 
+/// Get hostname from remote host via SSH
+fn get_remote_hostname(
+    host: &str,
+    user: &str,
+    port: u16,
+) -> Result<String, Box<dyn std::error::Error>> {
+    // Establish SSH connection
+    let tcp = std::net::TcpStream::connect(format!("{}:{}", host, port))?;
+    let mut sess = Session::new()?;
+    sess.set_tcp_stream(tcp);
+    sess.handshake()?;
+
+    // Authenticate with username only for now (password or key based authentication)
+    // This is a simple implementation - in a real app you might want to support
+    // multiple authentication methods or better credential handling
+    sess.userauth_agent(user)?;
+
+    // Create a session to execute commands
+    let mut channel = sess.channel_session()?;
+
+    // Execute command to get hostname
+    channel.exec("hostname")?;
+    let mut hostname_output = Vec::new();
+    channel.read_to_end(&mut hostname_output)?;
+    channel.close()?;
+
+    // Convert output to string and trim whitespace
+    let hostname = String::from_utf8_lossy(&hostname_output).trim().to_string();
+    Ok(hostname)
+}
+
 /// Get system info from remote host via SSH
 fn get_remote_system_info(
     host: &str,
@@ -356,9 +387,18 @@ fn format_value(value: f64, no_color: bool) -> String {
 }
 
 /// Display information in minimal format
-fn display_format(sys_info: &SystemInfo, args: &Args) {
+fn display_format(sys_info: &SystemInfo, args: &Args, ssh_host: Option<&String>) {
     // Clear screen
     print!("\x1B[2J\x1B[1;1H");
+
+    // Show remote host hostname in brackets in deep blue if connected via SSH
+    if let Some(host) = ssh_host {
+        if !args.no_color {
+            print!("\x1b[34;1m[@{}]\x1b[0m\n", host);
+        } else {
+            println!("[@{}]", host);
+        }
+    }
 
     // Simple format: CPU Load CPU Mem
     print!(
@@ -399,6 +439,10 @@ fn display_format(sys_info: &SystemInfo, args: &Args) {
 
     // Ensure we flush the output
     io::stdout().flush().unwrap();
+
+    // Reset cursor position to prevent blinking cursor issues
+    print!("\x1B[?25l"); // Hide cursor
+    io::stdout().flush().unwrap();
 }
 
 fn main() {
@@ -414,6 +458,10 @@ fn main() {
     })
     .expect("Error setting Ctrl-C handler");
 
+    // Hide cursor at start
+    print!("\x1B[?25l");
+    io::stdout().flush().unwrap();
+
     if let Some(ssh_host) = &args.ssh_host {
         // No welcome message for remote connection
         loop {
@@ -421,10 +469,21 @@ fn main() {
                 break;
             }
 
+            // Determine SSH user (use provided user or current user if empty)
+            let user = if args.ssh_user.is_empty() {
+                std::env::var("USER").unwrap_or_else(|_| "sri".to_string())
+            } else {
+                args.ssh_user.clone()
+            };
+
+            // Get remote hostname
+            let remote_hostname = get_remote_hostname(ssh_host, &user, args.ssh_port)
+                .unwrap_or_else(|_| ssh_host.clone());
+
             // For now, just return empty system info for remote connection
             // In a real implementation we would establish an SSH connection here
-            let sys_info = get_remote_system_info(ssh_host, &args.ssh_user, args.ssh_port)
-                .unwrap_or(SystemInfo {
+            let sys_info =
+                get_remote_system_info(ssh_host, &user, args.ssh_port).unwrap_or(SystemInfo {
                     cpu: CpuInfo {
                         load: 0.0,
                         memory_percentage: 0.0,
@@ -433,7 +492,7 @@ fn main() {
                 });
 
             // Display information
-            display_format(&sys_info, &args);
+            display_format(&sys_info, &args, Some(&remote_hostname));
 
             // Wait for the specified interval or check for shutdown
             for _ in 0..args.refresh {
@@ -459,7 +518,7 @@ fn main() {
             };
 
             // Display information in a table format
-            display_format(&sys_info, &args);
+            display_format(&sys_info, &args, None);
 
             // Wait for the specified interval or check for shutdown
             for _ in 0..args.refresh {
@@ -470,4 +529,8 @@ fn main() {
             }
         }
     }
+
+    // Show cursor before exiting
+    print!("\x1B[?25h");
+    io::stdout().flush().unwrap();
 }
