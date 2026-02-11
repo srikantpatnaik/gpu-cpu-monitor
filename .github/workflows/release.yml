@@ -1,4 +1,4 @@
-name: Build and Release
+name: Release
 
 on:
   push:
@@ -6,70 +6,53 @@ on:
       - 'v*'
 
 jobs:
-  build:
-    name: Build and Release
+  release:
+    name: Release
+    runs-on: ubuntu-latest
     strategy:
       matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
         include:
-          - target: x86_64-unknown-linux-musl
+          - target: x86_64-unknown-linux-gnu
             arch: x86_64
-            platform: linux
-          - target: aarch64-unknown-linux-musl
+          - target: aarch64-unknown-linux-gnu
             arch: arm64
-            platform: linux
-
-    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install musl-tools and target
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y musl-tools
-        rustup target add ${{ matrix.target }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ libssl-dev
 
-    - name: Build release binary
-      run: |
-        cargo build --target ${{ matrix.target }} --release
-        mkdir -p release
-        cp target/${{ matrix.target }}/release/gpu-cpu-monitor release/
+      - name: Install Rust toolchain
+        run: |
+          rustup toolchain install stable
+          rustup default stable
+          rustup target add ${{ matrix.target }}
 
-    - name: Create release assets
-      run: |
-        cd release
-        tar -czf gpu-cpu-monitor-${{ matrix.arch }}-${{ github.ref_name }}.tar.gz gpu-cpu-monitor
-        echo "ASSET_PATH=$(pwd)/gpu-cpu-monitor-${{ matrix.arch }}-${{ github.ref_name }}.tar.gz" >> $GITHUB_ENV
-        echo "ASSET_NAME=gpu-cpu-monitor-${{ matrix.arch }}-${{ github.ref_name }}.tar.gz" >> $GITHUB_ENV
+      - name: Build
+        run: |
+          cargo build --release --target ${{ matrix.target }}
+        env:
+          OPENSSL_DIR: /usr
 
-    - name: Upload release asset
-      uses: actions/upload-artifact@v4
-      with:
-        name: release-${{ matrix.arch }}
-        path: release/gpu-cpu-monitor-${{ matrix.arch }}-${{ github.ref_name }}.tar.gz
+      - name: Create release assets
+        run: |
+          mkdir -p release
+          cp target/${{ matrix.target }}/release/gpu-cpu-monitor release/gpu-cpu-monitor-${{ matrix.arch }}-linux
+          cd release && tar -czf gpu-cpu-monitor-${{ matrix.arch }}-linux.tar.gz gpu-cpu-monitor-${{ matrix.arch }}-linux
+        env:
+          OPENSSL_DIR: /usr
 
-  release:
-    name: Create Release
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref_type == 'tag'
-    steps:
-    - name: Download all artifacts
-      uses: actions/download-artifact@v4
-      with:
-        path: release
-
-    - name: Create Release
-      uses: softprops/action-gh-release@v2
-      with:
-        name: Release ${{ github.ref_name }}
-        tag_name: ${{ github.ref_name }}
-        body: |
-          ## Release ${{ github.ref_name }}
-          
-          This release includes static binaries for x86_64 and arm64 architectures.
-          
-          ### Binaries
-          - x86_64: gpu-cpu-monitor-x86_64-${{ github.ref_name }}.tar.gz
-          - arm64: gpu-cpu-monitor-arm64-${{ github.ref_name }}.tar.gz
-        files: |
-          release/**/*
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: release/gpu-cpu-monitor-${{ matrix.arch }}-linux.tar.gz
+          asset_name: gpu-cpu-monitor-${{ matrix.arch }}-linux.tar.gz
+          asset_content_type: application/gzip
