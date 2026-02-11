@@ -60,15 +60,15 @@ This will build the release version and create a symbolic link to the executable
 
 ## Pre-built Releases
 
-Pre-built static binaries are available for download from the [releases page](https://github.com/sri/gpu-cpu-monitor/releases).
+Pre-built static binaries are available for download from the [releases page](https://github.com/srikantpatnaik/gpu-cpu-monitor/releases).
 
 ### Download and Extract
 ```bash
 # Download for x86_64
-wget https://github.com/sri/gpu-cpu-monitor/releases/latest/download/gpu-cpu-monitor-x86_64-latest.tar.gz
+wget https://github.com/srikantpatnaik/gpu-cpu-monitor/releases/latest/download/gpu-cpu-monitor-x86_64-latest.tar.gz
 
 # Download for ARM64
-wget https://github.com/sri/gpu-cpu-monitor/releases/latest/download/gpu-cpu-monitor-arm64-latest.tar.gz
+wget https://github.com/srikantpatnaik/gpu-cpu-monitor/releases/latest/download/gpu-cpu-monitor-arm64-latest.tar.gz
 
 # Extract
 tar -xzf gpu-cpu-monitor-x86_64-latest.tar.gz
