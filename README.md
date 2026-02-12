@@ -13,7 +13,7 @@ A lightweight, fast Rust-based tool for real-time monitoring of GPU and CPU util
 - 🎨 **Color-coded Output**: Visual indicators - Green (<40%), Yellow (40-80%), Red (>80%)
 - ⚡ **Real-time Updates**: Configurable refresh intervals for live monitoring
 - 💻 **Terminal-friendly**: Clean screen clearing and proper cursor positioning
-- 📦 **Static Binaries**: Pre-built release binaries for multiple architectures
+
 - 🔒 **Secure**: Uses SSH key-based authentication for remote connections
 
 ## 🚀 Quick Start
@@ -21,11 +21,8 @@ A lightweight, fast Rust-based tool for real-time monitoring of GPU and CPU util
 ### Option 1: Download Pre-built Binary (Recommended)
 
 ```bash
-# Download for x86_64
+# Download the latest release
 wget https://github.com/srikantpatnaik/gpu-cpu-monitor/releases/latest/download/gpu-cpu-monitor-x86_64-latest.tar.gz
-
-# Download for ARM64
-wget https://github.com/srikantpatnaik/gpu-cpu-monitor/releases/latest/download/gpu-cpu-monitor-arm64-latest.tar.gz
 
 # Extract and run
 tar -xzf gpu-cpu-monitor-x86_64-latest.tar.gz
@@ -79,20 +76,15 @@ This will build the release version and create a symbolic link to the executable
 
 ### Build Requirements
 - Rust toolchain (cargo)
-- musl libc (for static linking when building from source)
 
 ## 📥 Installation
 
-### Package Managers
-Pre-built static binaries are available for download from the [releases page](https://github.com/srikantpatnaik/gpu-cpu-monitor/releases).
+
 
 ### Manual Download
 ```bash
-# Download for x86_64
+# Download the latest release
 wget https://github.com/srikantpatnaik/gpu-cpu-monitor/releases/latest/download/gpu-cpu-monitor-x86_64-latest.tar.gz
-
-# Download for ARM64  
-wget https://github.com/srikantpatnaik/gpu-cpu-monitor/releases/latest/download/gpu-cpu-monitor-arm64-latest.tar.gz
 
 # Extract and install
 tar -xzf gpu-cpu-monitor-x86_64-latest.tar.gz
