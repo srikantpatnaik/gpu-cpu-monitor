@@ -1,24 +1,19 @@
 # GPU/CPU Monitor
 
-[![Build Status](https://github.com/sri/gpu-cpu-monitor/actions/workflows/release.yml/badge.svg)](https://github.com/sri/gpu-cpu-monitor/actions)
-[![Latest Release](https://img.shields.io/github/release/srikantpatnaik/gpu-cpu-monitor.svg)](https://github.com/srikantpatnaik/gpu-cpu-monitor/releases/latest)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
 A lightweight, fast Rust-based tool for real-time monitoring of GPU and CPU utilization on local and remote systems. Perfect for keeping an eye on system resources during intensive workloads.
 
-## ✨ Features
+## Features
 
-- 🖥️ **Local Monitoring**: Real-time display of CPU load, memory usage, and GPU information
-- 🔗 **Remote SSH Monitoring**: Connect to remote hosts via SSH for distributed monitoring
-- 🎨 **Color-coded Output**: Visual indicators - Green (<40%), Yellow (40-80%), Red (>80%)
-- ⚡ **Real-time Updates**: Configurable refresh intervals for live monitoring
-- 💻 **Terminal-friendly**: Clean screen clearing and proper cursor positioning
+- Local monitoring: Real-time display of CPU load, memory usage, and GPU information
+- Remote SSH monitoring: Connect to remote hosts via SSH for distributed monitoring
+- Color-coded output: Visual indicators - Green (<40%), Yellow (40-80%), Red (>80%)
+- Real-time updates: Configurable refresh intervals for live monitoring
+- Terminal-friendly: Clean screen clearing and proper cursor positioning
+- Secure: Uses SSH key-based authentication for remote connections
 
-- 🔒 **Secure**: Uses SSH key-based authentication for remote connections
+## Quick Start
 
-## 🚀 Quick Start
-
-### Option 1: Download Pre-built Binary (Recommended)
+### Download Pre-built Binary
 
 ```bash
 # Download the latest release
@@ -30,7 +25,7 @@ chmod +x gpu-cpu-monitor
 ./gpu-cpu-monitor
 ```
 
-### Option 2: Build from Source
+### Build from Source
 
 ```bash
 git clone https://github.com/srikantpatnaik/gpu-cpu-monitor.git
@@ -38,18 +33,16 @@ cd gpu-cpu-monitor
 make
 ```
 
-This will build the release version and create a symbolic link to the executable.
-
 ## Usage
 
 ### Local Monitoring
 ```bash
-./gpu-cpu-monitor
+gpu-cpu-monitor
 ```
 
 ### Remote Monitoring
 ```bash
-./gpu-cpu-monitor --ssh-host <host> --ssh-user <user>
+gpu-cpu-monitor --ssh-host <host> --ssh-user <user>
 ```
 
 ### Options
@@ -67,19 +60,17 @@ This will build the release version and create a symbolic link to the executable
 - GPU Memory: Average GPU memory usage percentage
 - Colors: Green (<40%), Yellow (40-80%), Red (>80%)
 
-## 📋 Requirements
+## Requirements
 
 ### System Requirements
-- **Linux** (tested on Ubuntu/Debian)
-- **nvidia-smi** (for GPU monitoring - comes with NVIDIA drivers)
-- **SSH access** to remote hosts (for remote monitoring)
+- Linux (tested on Ubuntu/Debian)
+- nvidia-smi (for GPU monitoring - comes with NVIDIA drivers)
+- SSH access to remote hosts (for remote monitoring)
 
 ### Build Requirements
 - Rust toolchain (cargo)
 
-## 📥 Installation
-
-
+## Installation
 
 ### Manual Download
 ```bash
@@ -154,18 +145,16 @@ gpu-cpu-monitor --ssh-host remote-host --ssh-user user
 - Ensure binary is executable: `chmod +x gpu-cpu-monitor`
 - For system-wide installation: `sudo mv gpu-cpu-monitor /usr/local/bin/`
 
-## 📊 Output Format
+## Output Format
 
-The tool displays the following metrics with color-coded indicators:
+The tool displays metrics with color-coded indicators:
+- CPU Load: Percentage of CPU utilization 
+- CPU Memory: Percentage of system memory usage
+- GPU Load: Average GPU load percentage
+- GPU Memory: Average GPU memory usage percentage
+- Colors: Green (<40%), Yellow (40-80%), Red (>80%)
 
-| Metric | Description | Colors |
-|--------|-------------|---------|
-| **CPU Load** | Percentage of CPU utilization | 🟢 <40% 🟡 40-80% 🔴 >80% |
-| **CPU Memory** | Percentage of system memory usage | 🟢 <40% 🟡 40-80% 🔴 >80% |
-| **GPU Load** | Average GPU load percentage | 🟢 <40% 🟡 40-80% 🔴 >80% |
-| **GPU Memory** | Average GPU memory usage percentage | 🟢 <40% 🟡 40-80% 🔴 >80% |
-
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -175,11 +164,11 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Built with [Rust](https://www.rust-lang.org/) for performance and safety
 - Uses [clap](https://clap.rs/) for command-line argument parsing
