@@ -1,21 +1,43 @@
 # GPU/CPU Monitor
 
 [![Build Status](https://github.com/sri/gpu-cpu-monitor/actions/workflows/release.yml/badge.svg)](https://github.com/sri/gpu-cpu-monitor/actions)
+[![Latest Release](https://img.shields.io/github/release/srikantpatnaik/gpu-cpu-monitor.svg)](https://github.com/srikantpatnaik/gpu-cpu-monitor/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A Rust-based tool for monitoring GPU and CPU utilization on local and remote systems.
+A lightweight, fast Rust-based tool for real-time monitoring of GPU and CPU utilization on local and remote systems. Perfect for keeping an eye on system resources during intensive workloads.
 
-## Features
+## ✨ Features
 
-- **Local Monitoring**: Displays CPU load, memory usage, and GPU information
-- **Remote SSH Monitoring**: Connects to remote hosts via SSH for monitoring
-- **Color-coded Output**: Green (low), Yellow (medium), Red (high) usage indicators
-- **Real-time Updates**: Configurable refresh intervals
-- **Terminal-friendly**: Proper screen clearing and cursor positioning
-- **Static Binaries**: Pre-built release binaries for x86_64 and ARM64 architectures
+- 🖥️ **Local Monitoring**: Real-time display of CPU load, memory usage, and GPU information
+- 🔗 **Remote SSH Monitoring**: Connect to remote hosts via SSH for distributed monitoring
+- 🎨 **Color-coded Output**: Visual indicators - Green (<40%), Yellow (40-80%), Red (>80%)
+- ⚡ **Real-time Updates**: Configurable refresh intervals for live monitoring
+- 💻 **Terminal-friendly**: Clean screen clearing and proper cursor positioning
+- 📦 **Static Binaries**: Pre-built release binaries for multiple architectures
+- 🔒 **Secure**: Uses SSH key-based authentication for remote connections
 
-## Build
+## 🚀 Quick Start
+
+### Option 1: Download Pre-built Binary (Recommended)
 
 ```bash
+# Download for x86_64
+wget https://github.com/srikantpatnaik/gpu-cpu-monitor/releases/latest/download/gpu-cpu-monitor-x86_64-latest.tar.gz
+
+# Download for ARM64
+wget https://github.com/srikantpatnaik/gpu-cpu-monitor/releases/latest/download/gpu-cpu-monitor-arm64-latest.tar.gz
+
+# Extract and run
+tar -xzf gpu-cpu-monitor-x86_64-latest.tar.gz
+chmod +x gpu-cpu-monitor
+./gpu-cpu-monitor
+```
+
+### Option 2: Build from Source
+
+```bash
+git clone https://github.com/srikantpatnaik/gpu-cpu-monitor.git
+cd gpu-cpu-monitor
 make
 ```
 
@@ -48,56 +70,125 @@ This will build the release version and create a symbolic link to the executable
 - GPU Memory: Average GPU memory usage percentage
 - Colors: Green (<40%), Yellow (40-80%), Red (>80%)
 
-## Requirements
+## 📋 Requirements
 
+### System Requirements
+- **Linux** (tested on Ubuntu/Debian)
+- **nvidia-smi** (for GPU monitoring - comes with NVIDIA drivers)
+- **SSH access** to remote hosts (for remote monitoring)
+
+### Build Requirements
 - Rust toolchain (cargo)
-- nvidia-smi (for GPU monitoring)
-- SSH access to remote hosts (for remote monitoring)
+- musl libc (for static linking when building from source)
 
-## Build Requirements
+## 📥 Installation
 
-- musl libc (for static linking)
-
-## Pre-built Releases
-
+### Package Managers
 Pre-built static binaries are available for download from the [releases page](https://github.com/srikantpatnaik/gpu-cpu-monitor/releases).
 
-### Download and Extract
+### Manual Download
 ```bash
 # Download for x86_64
 wget https://github.com/srikantpatnaik/gpu-cpu-monitor/releases/latest/download/gpu-cpu-monitor-x86_64-latest.tar.gz
 
-# Download for ARM64
+# Download for ARM64  
 wget https://github.com/srikantpatnaik/gpu-cpu-monitor/releases/latest/download/gpu-cpu-monitor-arm64-latest.tar.gz
 
-# Extract
+# Extract and install
 tar -xzf gpu-cpu-monitor-x86_64-latest.tar.gz
-chmod +x gpu-cpu-monitor
+sudo mv gpu-cpu-monitor /usr/local/bin/
 ```
 
-### Examples
+## 💡 Usage Examples
 
-Monitor local system:
+### Local Monitoring
+Monitor your local system with default settings:
 ```bash
-./gpu-cpu-monitor
+gpu-cpu-monitor
 ```
 
-Monitor remote system (user will be prompted for password or use SSH agent):
+### Remote Monitoring
+Monitor remote server (will prompt for password or use SSH agent):
 ```bash
-./gpu-cpu-monitor --ssh-host example.com
+gpu-cpu-monitor --ssh-host server.example.com
 ```
 
-Monitor remote system with specific user:
+Monitor with specific user and port:
 ```bash
-./gpu-cpu-monitor --ssh-host example.com --ssh-user myuser
+gpu-cpu-monitor --ssh-host server.example.com --ssh-user admin --ssh-port 2222
 ```
 
-Monitor with custom refresh interval:
+### Customization
+Monitor with custom refresh interval (5 seconds):
 ```bash
-./gpu-cpu-monitor --refresh 5
+gpu-cpu-monitor --refresh 5
 ```
 
-Monitor without colors:
+Monitor without colors (useful for scripts):
 ```bash
-./gpu-cpu-monitor --no-color
+gpu-cpu-monitor --no-color
 ```
+
+### SSH Key Authentication
+For passwordless remote monitoring, set up SSH keys:
+```bash
+# Generate SSH key (if you don't have one)
+ssh-keygen -t ed25519
+
+# Copy to remote host
+ssh-copy-id user@remote-host
+
+# Now monitor without password prompts
+gpu-cpu-monitor --ssh-host remote-host --ssh-user user
+```
+
+## 🔧 Troubleshooting
+
+### GPU Not Detected
+- Ensure NVIDIA drivers are properly installed
+- Check if `nvidia-smi` command works in your terminal
+- Verify that you have CUDA-compatible GPU
+
+### SSH Connection Issues
+- Check SSH connectivity: `ssh user@host`
+- Verify SSH key permissions: `chmod 600 ~/.ssh/id_rsa`
+- Ensure SSH agent is running for key-based auth
+
+### High CPU Usage
+- Increase refresh interval: `--refresh 5`
+- The tool uses minimal resources, but high frequency updates may impact performance
+
+### Permission Denied
+- Ensure binary is executable: `chmod +x gpu-cpu-monitor`
+- For system-wide installation: `sudo mv gpu-cpu-monitor /usr/local/bin/`
+
+## 📊 Output Format
+
+The tool displays the following metrics with color-coded indicators:
+
+| Metric | Description | Colors |
+|--------|-------------|---------|
+| **CPU Load** | Percentage of CPU utilization | 🟢 <40% 🟡 40-80% 🔴 >80% |
+| **CPU Memory** | Percentage of system memory usage | 🟢 <40% 🟡 40-80% 🔴 >80% |
+| **GPU Load** | Average GPU load percentage | 🟢 <40% 🟡 40-80% 🔴 >80% |
+| **GPU Memory** | Average GPU memory usage percentage | 🟢 <40% 🟡 40-80% 🔴 >80% |
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [Rust](https://www.rust-lang.org/) for performance and safety
+- Uses [clap](https://clap.rs/) for command-line argument parsing
+- GPU monitoring powered by NVIDIA's nvidia-smi tool
